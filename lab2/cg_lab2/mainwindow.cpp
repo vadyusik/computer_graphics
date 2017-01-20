@@ -27,3 +27,16 @@ void MainWindow::on_colorCorrectionButton_clicked()
 {
     imageObj.colorCorrection(ui->resultImageLabel);
 }
+
+void MainWindow::on_mainImageRGBButton_clicked()
+{
+    if( this->imageObj.isMainImageLoaded == false )
+    {   return;}
+
+    imageObj.mainImage.histogramRGB(ui->mainImageRLabel,
+                                    ui->mainImageGLabel,
+                                    ui->mainImageBLabel,
+                                    ui->mainImageRHistogramLabel,
+                                    ui->mainImageGHistogramLabel,
+                                    ui->mainImageBHistogramLabel);
+}

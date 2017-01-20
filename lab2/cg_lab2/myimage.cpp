@@ -311,6 +311,119 @@ void ImageStructure::   convert_LAB_to_RGB()
     }
 }
 
+void ImageStructure:: histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
+                                   QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB)
+{
+
+
+    QImage R = image,
+           G = image,
+           B = image;
+
+    int h = image.height(),
+        w = image.width(),
+        r, g, b;
+    QVector<QVector3D> RGBh = QVector<QVector3D>(256, QVector3D(0, 0, 0));
+
+    QRgb clrRGB;
+    QColor color;
+
+    for( int i = 0, j; i < w; i++ )
+    {
+        for( j = 0; j < h; j++)
+        {
+            clrRGB = image.pixel(i, j);
+
+            r = qRed  (clrRGB);
+            g = qGreen(clrRGB);
+            b = qBlue (clrRGB);
+
+            RGBh[r].setX(RGBh[r].x() + 1);
+            RGBh[g].setY(RGBh[g].y() + 1);
+            RGBh[b].setZ(RGBh[b].z() + 1);
+
+            color = QColor(r, 0, 0);
+            R.setPixel(i, j, color.rgba());
+
+            color = QColor(0, g, 0);
+            G.setPixel(i, j, color.rgba());
+
+            color = QColor(0, 0, b);
+            B.setPixel(i, j, color.rgba());
+        }
+    }
+
+    labelR->resize(290, 290);
+    setLabel(labelR, &R);
+    labelG->resize(290, 290);
+    setLabel(labelG, &G);
+    labelB->resize(290, 290);
+    setLabel(labelB, &B);
+
+    double mx = -1;
+
+    for( int i = 0; i < 256; i++ )
+    {   mx = std::max( RGBh[i].x(), std::max( RGBh[i].y(), RGBh[i].z() ) );
+        qDebug() << i << " : " << RGBh[i].x() << "; " << RGBh[i].y() << "; " << RGBh[i].z();
+    }
+
+
+    QImage RH = QImage(256, 90, QImage::Format_ARGB32);
+    QImage GH = QImage(256, 90, QImage::Format_ARGB32);
+    QImage BH = QImage(256, 90, QImage::Format_ARGB32);
+
+    int hr, hg, hb;
+    for( int i = 0, j; i < 256; i++ )
+    {
+        hr = std::min( (RGBh[i].x()*90.0)/mx, 90.0);
+        color = Qt::red;    QRgb clr = color.rgba();
+        for( j = 0; j < hr; j++)
+        {   RH.setPixel(i, j, clr );}
+        color = Qt::white;  clr = color.rgba();
+        for( j = hr; j < 90; j++)
+        {   RH.setPixel(i, j, clr );}
+
+        hg = std::min( (RGBh[i].y()*90.0)/mx, 90.0);
+        color = Qt::green;    clr = color.rgba();
+        for( j = 0; j < hg; j++)
+        {   GH.setPixel(i, j, clr );}
+        color = Qt::white;  clr = color.rgba();
+        for( j = hg; j < 90; j++)
+        {   GH.setPixel(i, j, clr );}
+
+        hb = std::min( (RGBh[i].z()*90.0)/mx, 90.0);
+        color = Qt::blue;    clr = color.rgba();
+        for( j = 0; j < hb; j++)
+        {   BH.setPixel(i, j, clr );}
+        color = Qt::white;  clr = color.rgba();
+        for( j = hb; j < 90; j++)
+        {   BH.setPixel(i, j, clr );}
+    }
+
+    setLabel(labelHistR, &RH);
+    setLabel(labelHistG, &GH);
+    setLabel(labelHistB, &BH);
+
+}
+
+void ImageStructure:: setLabel(QLabel *labelObj, QImage *img)
+{
+    int h = img->height(),
+        w = img->width(),
+        l = labelObj->height();
+
+    QPixmap pxmptmp = QPixmap :: fromImage(*img);
+
+    if( h > w )
+    {   pxmptmp = pxmptmp.scaledToHeight(l);}
+    else
+    {   pxmptmp = pxmptmp.scaledToWidth(l);}
+
+    labelObj->resize(pxmptmp.width(), pxmptmp.height());
+    labelObj->setPixmap( pxmptmp );
+}
+
+
 void ImageStructure::   convert()
 {
     this->convert_LAB_to_RGB();

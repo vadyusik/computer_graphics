@@ -45,12 +45,15 @@ public:
 
     void convert_LAB_to_RGB();
 
+    void histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+
 
 private:
 
     void calculate_LAB();
     void calculate_moments();
-
+    void setLabel(QLabel *labelObj, QImage *img);
 };
 
 
@@ -60,7 +63,7 @@ class MyImage : public QObject
 {
     Q_OBJECT
 
-private:
+public:
 
     ImageStructure mainImage;
     ImageStructure targetImage;

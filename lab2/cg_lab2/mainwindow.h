@@ -47,6 +47,8 @@ private slots:
 
     void on_colorCorrectionButton_clicked();
 
+    void on_mainImageRGBButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
