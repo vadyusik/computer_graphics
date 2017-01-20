@@ -23,11 +23,65 @@
       <height>590</height>
      </rect>
     </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
     <widget class="QWidget" name="tab">
      <attribute name="title">
       <string>Tab 1</string>
      </attribute>
-     <zorder>gridLayoutWidget</zorder>
+     <widget class="QLabel" name="targetImageLabel">
+      <property name="geometry">
+       <rect>
+        <x>1</x>
+        <y>1</y>
+        <width>310</width>
+        <height>310</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QLabel" name="resultImageLabel">
+      <property name="geometry">
+       <rect>
+        <x>312</x>
+        <y>1</y>
+        <width>310</width>
+        <height>310</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="loadTargetImageButton">
+      <property name="geometry">
+       <rect>
+        <x>100</x>
+        <y>420</y>
+        <width>171</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Load Target Image</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="colorCorrectionButton">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>420</y>
+        <width>141</width>
+        <height>27</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Color correction</string>
+      </property>
+     </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -61,14 +115,23 @@
      <string>Load Main Image</string>
     </property>
    </widget>
-   <widget class="QGraphicsView" name="graphicsView">
+   <widget class="QLabel" name="mainImageLabel">
     <property name="geometry">
      <rect>
       <x>5</x>
       <y>5</y>
-      <width>710</width>
-      <height>640</height>
+      <width>720</width>
+      <height>720</height>
      </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>CrossCursor</cursorShape>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
   </widget>

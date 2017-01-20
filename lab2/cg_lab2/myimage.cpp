@@ -2,75 +2,96 @@
 
 MyImage::MyImage(QObject *parent) :
     QObject(parent)
-{   }
-
-void MyImage::  load_image(QString fileName, bool is_main_image = false)
 {
-    //QFileDialog::getOpenFileName(this, tr("Open File"), "/home/vadya/Dropbox/coding/ComputerGraphic/ImageExamples", tr("Images (*.png *.xpm *.jpg)"));
+    isMainImageLoaded   = false;
+    isTargetImageLoaded = false;
+    isResultImageExist  = false;
+
+}
+//rewrited 19-01-2017
+void MyImage::   load_image(QLabel *labelObj, bool is_main_image)
+{
+    QString fileName =
+        QFileDialog::getOpenFileName(labelObj,
+            tr("Open Image"), "/home/vadya/Dropbox/coding/ComputerGraphic/ImageExamples",
+            tr("Image Files (*.png *.jpg *.bmp)"));
 
     if( is_main_image == true )
     {
         mainImage.set_image     ( QImage(fileName) );
-        qDebug() << mainImage.image.size().height() << " "
-                 << mainImage.image.size().width();
+        labelObj->resize(720, 720);
+        setImage(labelObj, &(mainImage.image) );
+        isMainImageLoaded   = true;
     }else
+
     {
         targetImage.set_image   ( QImage(fileName) );
-        qDebug() <<  targetImage.image.size().height() << " "
-                  << targetImage.image.size().width();
+        labelObj->resize(310, 310);
+        setImage(labelObj, &(targetImage.image) );
+        isTargetImageLoaded = true;
     }
-
-
-    /*
-    qDebug() << "IN void MyImage::  slotLoadImage";
-    QString fileName =
-         QFileDialog::getOpenFileName(label_obj, tr("Open File"),
-                                      "/home/vadya/Dropbox/coding/ComputerGraphic/ImageExamples",
-                                       tr("Images (*.png *.xpm *.jpg)"));
-    if( is_main_image == true )
-    {
-        mainImage.set_image( QImage(fileName) );
-
-        label_obj->setPixmap(QPixmap::fromImage(mainImage.image));
-
-
-        /*
-        QPixmap bkgnd( QPixmap::fromImage(mainImage.image) );
-
-        if( mainImage.image.size().height() > mainImage.image.size().width() )
-        {
-
-            double w = 720 * ( (double)( mainImage.image.size().width() )/
-                               (double)( mainImage.image.size().height() ) );
-
-            bkgnd = bkgnd.scaled(w, 720, Qt::IgnoreAspectRatio);
-            widgetObj->resize(w, 720);
-        }else
-        {
-            double h = 720 * ( (double)( mainImage.image.size().height() )/
-                               (double)( mainImage.image.size().width() ) );
-            bkgnd = bkgnd.scaled(720, h, Qt::IgnoreAspectRatio);
-            widgetObj->resize(720, h);
-        }
-
-        QPalette palette;
-        palette.setBrush(QPalette::Background, bkgnd);
-        widgetObj->setPalette(palette);
-        //
-
-
-    }else
-    {
-        targetImage.set_image( QImage(fileName) );
-    }
-    */
-    //widgetO
 }
+//writed 19-01-2017
+void MyImage:: setImage(QLabel *labelObj, QImage *img)
+{
+    int h = img->height(),
+        w = img->width(),
+        l = labelObj->height();
 
+    QPixmap pxmptmp = QPixmap :: fromImage(*img);
+
+    if( h > w )
+    {   pxmptmp = pxmptmp.scaledToHeight(l);}
+    else
+    {   pxmptmp = pxmptmp.scaledToWidth(l);}
+
+    labelObj->resize(pxmptmp.width(), pxmptmp.height());
+    labelObj->setPixmap( pxmptmp );
+}
 
 void MyImage::  convert()
 {
     this->mainImage.convert();
+}
+
+void MyImage:: colorCorrection(QLabel *labelObj)
+{
+    if( isMainImageLoaded == false || isTargetImageLoaded == false)
+    {
+        qDebug() << "NOT enough data to color correction!";
+        return;
+    }
+
+    resultImage.image = targetImage.image;
+    resultImage.image_lab = targetImage.image_lab;
+
+    QVector3D mainImgEx = mainImage.expected_value,
+              targImgEx = targetImage.expected_value,
+              koef;
+
+    koef.setX( mainImage.standard_deviation.x() / targetImage.standard_deviation.x() );
+    koef.setY( mainImage.standard_deviation.y() / targetImage.standard_deviation.y() );
+    koef.setZ( mainImage.standard_deviation.z() / targetImage.standard_deviation.z() );
+
+    QVector< QVector< QVector3D > > *lab = &resultImage.image_lab;
+
+    int h = resultImage.image.height(),
+        w = resultImage.image.width();
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            resultImage.image_lab[i][j].setX( mainImgEx.x() + koef.x()*( resultImage.image_lab[i][j].x() - targImgEx.x() ) );
+            resultImage.image_lab[i][j].setY( mainImgEx.y() + koef.y()*( resultImage.image_lab[i][j].y() - targImgEx.y() ) );
+            resultImage.image_lab[i][j].setZ( mainImgEx.z() + koef.z()*( resultImage.image_lab[i][j].z() - targImgEx.z() ) );
+        }
+    }
+
+    resultImage.convert_LAB_to_RGB();
+
+    labelObj->resize(310, 310);
+    setImage(labelObj, &resultImage.image);
 }
 
 
@@ -82,13 +103,9 @@ void ImageStructure::   set_image(QImage obj)
     time.start();   eachtime.start();
 
     image = obj;
-        //qDebug() << "Time till set image " << eachtime.elapsed();   eachtime.start();
 
     calculate_LAB();
-        //qDebug() << "Time till convert into LAB " << eachtime.elapsed();   eachtime.start();
-
     calculate_moments();
-        //qDebug() << "Time till calculate moments " << eachtime.elapsed();
 
     qDebug() << "Expected value of L color chanal is " << expected_value.x();
     qDebug() << "Expected value of A color chanal is " << expected_value.y();
@@ -123,13 +140,13 @@ void ImageStructure::   calculate_LAB()
             G = qGreen(color);
             B = qBlue (color);
 
-            R = std::max( R * 0.00361399462, 0.01176470588);
-            G = std::max( G * 0.00361399462, 0.01176470588);
-            B = std::max( B * 0.00361399462, 0.01176470588);
+            R = std::max( R * 0.00361399, 0.01176470588);
+            G = std::max( G * 0.00361399, 0.01176470588);
+            B = std::max( B * 0.00361399, 0.01176470588);
 
-            L = 0.3811*R + 0.5783*G + 0.0402*B;     L = qLn(L) / 2.3025850929;
-            M = 0.1967*R + 0.7244*G + 0.0782*B;     M = qLn(M) / 2.3025850929;
-            S = 0.0241*R + 0.1288*G + 0.8444*B;     S = qLn(S) / 2.3025850929;
+            L = 0.3811*R + 0.5783*G + 0.0402*B;     L = log10(L);//L = qLn(L) / 2.3025850929;
+            M = 0.1967*R + 0.7244*G + 0.0782*B;     M = log10(M);//M = qLn(M) / 2.3025850929;
+            S = 0.0241*R + 0.1288*G + 0.8444*B;     S = log10(S);//S = qLn(S) / 2.3025850929;
 
             l = 0.5774*( L + M + S);
             a = 0.4082*( L + M - 2.0*S);
@@ -151,21 +168,37 @@ void ImageStructure::   calculate_moments()
             standardDeviationL = 0,
             standardDeviationA = 0,
             standardDeviationB = 0;
-    double L, A, B;
-
 
     for(int i = 0, j; i < w; i++)
     {
         for(j = 0; j < h; j++)
         {
-            L = image_lab[i][j].x();
-            A = image_lab[i][j].y();
-            B = image_lab[i][j].z();
-
             //  Expected Value
-            expectedValueL += L;
-            expectedValueA += A;
-            expectedValueB += B;
+            expectedValueL += image_lab[i][j].x();;
+            expectedValueA += image_lab[i][j].y();
+            expectedValueB += image_lab[i][j].z();
+        }
+    }
+
+    double N = h*w;
+
+    expectedValueL /= N;
+    expectedValueA /= N;
+    expectedValueB /= N;
+
+    expected_value.setX(expectedValueL);
+    expected_value.setY(expectedValueA);
+    expected_value.setZ(expectedValueB);
+
+    double L, A, B;
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            L = image_lab[i][j].x() - expectedValueL;
+            A = image_lab[i][j].y() - expectedValueA;
+            B = image_lab[i][j].z() - expectedValueB;
 
             //  Standard Deviation
             standardDeviationL += L*L;
@@ -174,15 +207,13 @@ void ImageStructure::   calculate_moments()
         }
     }
 
-    double N = h*w;
+    standardDeviationL = qSqrt( standardDeviationL/N );
+    standardDeviationA = qSqrt( standardDeviationA/N );
+    standardDeviationB = qSqrt( standardDeviationB/N );
 
-    expected_value.setX(expectedValueL/N);
-    expected_value.setY(expectedValueA/N);
-    expected_value.setZ(expectedValueB/N);
-
-    standard_deviation.setX( qSqrt(standardDeviationL/N - expectedValueL*expectedValueL) );
-    standard_deviation.setY( qSqrt(standardDeviationA/N - expectedValueA*expectedValueA) );
-    standard_deviation.setZ( qSqrt(standardDeviationB/N - expectedValueB*expectedValueB) );
+    standard_deviation.setX( standardDeviationL );
+    standard_deviation.setY( standardDeviationA );
+    standard_deviation.setZ( standardDeviationB );
 }
 // rewrited
 void ImageStructure::   convert_LAB_to_RGB(QPoint upPoint, QPoint downPoint)
@@ -240,6 +271,44 @@ void ImageStructure::   convert_LAB_to_RGB(QPoint upPoint, QPoint downPoint)
     //**/
 
     qDebug() << "inner convertation done";
+}
+
+void ImageStructure::   convert_LAB_to_RGB()
+{
+
+    int h = image.height(),
+        w = image.width();
+
+    double R, G, B, L, M, S, l, a, b;
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            l = image_lab[i][j].x();
+            a = image_lab[i][j].y();
+            b = image_lab[i][j].z();
+
+            L = 0.5774*l + 0.4082*a + 0.7071*b;
+            M = 0.5774*l + 0.4082*a - 0.7071*b;//- 1.4142*b; ///!!!
+            S = 0.5774*l - 0.8164*a;//- 0.4082*a; ///!!!
+
+            L = qPow(10, L);
+            M = qPow(10, M);
+            S = qPow(10, S);
+
+            R =  4.4679*L - 3.5873*M + 0.1193*S;
+            G = -1.2186*L + 2.3809*M - 0.1624*S;
+            B =  0.0497*L - 0.2439*M + 1.2045*S;
+
+            R = std::max( 0.0, std::min( R*276.7021, 255.0) );
+            G = std::max( 0.0, std::min( G*276.7021, 255.0) );
+            B = std::max( 0.0, std::min( B*276.7021, 255.0) );
+
+            QColor color(R, G, B);
+            image.setPixel(i, j, color.rgba());
+        }
+    }
 }
 
 void ImageStructure::   convert()

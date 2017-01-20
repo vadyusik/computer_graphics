@@ -40,13 +40,17 @@ public:
 
     void convert();
 
+    void convert_LAB_to_RGB(QPoint upPoint, //= QPoint(0, 0),
+                            QPoint downPoint);// = QPoint(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() ));
+
+    void convert_LAB_to_RGB();
+
+
 private:
 
     void calculate_LAB();
     void calculate_moments();
 
-    void convert_LAB_to_RGB(QPoint upPoint = QPoint(0, 0),
-                            QPoint downPoint = QPoint(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() ));
 };
 
 
@@ -62,6 +66,10 @@ private:
     ImageStructure targetImage;
     ImageStructure resultImage;
 
+    bool isMainImageLoaded;
+    bool isTargetImageLoaded;
+    bool isResultImageExist;
+
     QVector< QVector< bool > >  isPixelChanged;
 
 public:
@@ -69,12 +77,17 @@ public:
 
     void convert();
 
-    void load_image(QString fileName, bool is_main_image = false);
+    void colorCorrection(QLabel *labelObj);
+
+    void load_image(QLabel *labelObj, bool is_main_image = false);
+
+private:
+
+    void setImage(QLabel *labelObj, QImage *img);
 
 signals:
 
 public slots:
-
 
 };
 

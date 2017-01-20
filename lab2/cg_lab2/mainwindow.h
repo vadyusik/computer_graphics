@@ -34,14 +34,6 @@ private:
 
     MyImage imageObj;
 
-    GraphicsScene *sourceImageScene = 0;
-    GraphicsScene *targetImageScene = 0;
-    GraphicsScene *resultImageScene = 0;
-
-    QGraphicsPixmapItem *sourceImageItem = 0;
-    QGraphicsPixmapItem *targetImageItem = 0;
-    QGraphicsPixmapItem *resultImageItem = 0;
-
 
 public:
 
@@ -50,6 +42,10 @@ public:
 
 private slots:
     void on_loadMainImageButton_clicked();
+
+    void on_loadTargetImageButton_clicked();
+
+    void on_colorCorrectionButton_clicked();
 
 private:
     Ui::MainWindow *ui;
