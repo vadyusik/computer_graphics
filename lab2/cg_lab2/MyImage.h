@@ -47,6 +47,12 @@ public:
 
     void histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
                       QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+    void histogramLAB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+    void histogramHSV(QLabel *labelR, QLabel *labelG, QLabel *labelB,
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+    void histogramYIQ(QLabel *labelR, QLabel *labelG, QLabel *labelB,
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
 
 
 private:
@@ -54,9 +60,16 @@ private:
     void calculate_LAB();
     void calculate_moments();
     void setLabel(QLabel *labelObj, QImage *img);
+
+    QColor      inline LAB_to_RGB(float l, float a, float b);
+    QVector3D   inline RGB_to_LAB(QRgb color);
+
+    QVector3D inline HSV_to_RGB(QVector3D clrHSV);
+    QVector3D inline RGB_to_HSV(QVector3D clrRGB);
+
+    QVector3D inline RGB_to_YIQ(QVector3D clrRGB);
+    QVector3D inline YIQ_to_RGB(QVector3D clrYIQ);
 };
-
-
 
 
 class MyImage : public QObject

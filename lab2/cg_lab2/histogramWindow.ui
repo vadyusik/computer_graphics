@@ -1,0 +1,323 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>histogramWindow</class>
+ <widget class="QWidget" name="histogramWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1380</width>
+    <height>720</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="targetImageFullLabel">
+   <property name="geometry">
+    <rect>
+     <x>4</x>
+     <y>4</y>
+     <width>340</width>
+     <height>340</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetImageALabel">
+   <property name="geometry">
+    <rect>
+     <x>348</x>
+     <y>4</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetImageBLabel">
+   <property name="geometry">
+    <rect>
+     <x>622</x>
+     <y>4</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetImageCLabel">
+   <property name="geometry">
+    <rect>
+     <x>896</x>
+     <y>4</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetHistogramALabel">
+   <property name="geometry">
+    <rect>
+     <x>348</x>
+     <y>278</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetHistogramBLabel">
+   <property name="geometry">
+    <rect>
+     <x>622</x>
+     <y>278</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="targetHistogramCLabel">
+   <property name="geometry">
+    <rect>
+     <x>896</x>
+     <y>278</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultImageFullLabel">
+   <property name="geometry">
+    <rect>
+     <x>4</x>
+     <y>362</y>
+     <width>340</width>
+     <height>340</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultImageALabel">
+   <property name="geometry">
+    <rect>
+     <x>348</x>
+     <y>362</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultImageBLabel">
+   <property name="geometry">
+    <rect>
+     <x>622</x>
+     <y>362</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultImageCLabel">
+   <property name="geometry">
+    <rect>
+     <x>896</x>
+     <y>362</y>
+     <width>270</width>
+     <height>270</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultHistogramALabel">
+   <property name="geometry">
+    <rect>
+     <x>348</x>
+     <y>636</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultHistogramBLabel">
+   <property name="geometry">
+    <rect>
+     <x>622</x>
+     <y>636</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLabel" name="resultHistogramCLabel">
+   <property name="geometry">
+    <rect>
+     <x>896</x>
+     <y>636</y>
+     <width>255</width>
+     <height>80</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>1170</x>
+     <y>30</y>
+     <width>191</width>
+     <height>311</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="RGBButton">
+      <property name="text">
+       <string>RGB</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="LABButton">
+      <property name="text">
+       <string>LAB</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="YIQButton">
+      <property name="text">
+       <string>YIQ</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer_5">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item>
+     <widget class="QPushButton" name="hideButton">
+      <property name="text">
+       <string>Close</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer_2">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>hideButton</sender>
+   <signal>clicked()</signal>
+   <receiver>histogramWindow</receiver>
+   <slot>hide()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1271</x>
+     <y>334</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>1336</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

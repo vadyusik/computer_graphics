@@ -14,9 +14,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    myimage.cpp
+    myimage.cpp \
+    histogramWindow.cpp
 
 HEADERS  += mainwindow.h \
-    MyImage.h
+    MyImage.h \
+    histogramWindow.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    histogramWindow.ui

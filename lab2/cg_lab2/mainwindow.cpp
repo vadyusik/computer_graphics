@@ -40,3 +40,53 @@ void MainWindow::on_mainImageRGBButton_clicked()
                                     ui->mainImageGHistogramLabel,
                                     ui->mainImageBHistogramLabel);
 }
+
+void MainWindow::on_mainImageLABButton_clicked()
+{
+    if( this->imageObj.isMainImageLoaded == false )
+    {   return;}
+
+    imageObj.mainImage.histogramLAB(ui->mainImageRLabel,
+                                    ui->mainImageGLabel,
+                                    ui->mainImageBLabel,
+                                    ui->mainImageRHistogramLabel,
+                                    ui->mainImageGHistogramLabel,
+                                    ui->mainImageBHistogramLabel);
+
+}
+
+void MainWindow::on_mainImageHSVButton_clicked()
+{
+    if( this->imageObj.isMainImageLoaded == false )
+    {   return;}
+
+    imageObj.mainImage.histogramHSV(ui->mainImageRLabel,
+                                    ui->mainImageGLabel,
+                                    ui->mainImageBLabel,
+                                    ui->mainImageRHistogramLabel,
+                                    ui->mainImageGHistogramLabel,
+                                    ui->mainImageBHistogramLabel);
+}
+
+
+
+void MainWindow::on_mainImageYIQButton_clicked()
+{
+    if( this->imageObj.isMainImageLoaded == false )
+    {   return;}
+
+    imageObj.mainImage.histogramYIQ(ui->mainImageRLabel,
+                                    ui->mainImageGLabel,
+                                    ui->mainImageBLabel,
+                                    ui->mainImageRHistogramLabel,
+                                    ui->mainImageGHistogramLabel,
+                                    ui->mainImageBHistogramLabel);
+}
+
+void MainWindow::on_histogramsButton_clicked()
+{
+    if( imageObj.isResultImageExist == false )
+    {   return;}
+
+    histograms.show();
+}

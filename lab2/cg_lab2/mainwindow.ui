@@ -95,9 +95,9 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="loadTargetImageButton">
+          <widget class="QPushButton" name="loadMainImageButton">
            <property name="text">
-            <string>Load Target Image</string>
+            <string>Load Main Image</string>
            </property>
           </widget>
          </item>
@@ -115,9 +115,9 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="loadMainImageButton">
+          <widget class="QPushButton" name="loadTargetImageButton">
            <property name="text">
-            <string>Load Main Image</string>
+            <string>Load Target Image</string>
            </property>
           </widget>
          </item>
@@ -173,6 +173,26 @@
          </item>
          <item>
           <spacer name="verticalSpacer_5">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="histogramsButton">
+           <property name="text">
+            <string>Histograms</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_7">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
@@ -309,7 +329,7 @@
        <rect>
         <x>320</x>
         <y>600</y>
-        <width>291</width>
+        <width>261</width>
         <height>31</height>
        </rect>
       </property>
@@ -342,7 +362,7 @@
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer_6">
+        <spacer name="horizontalSpacer_4">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -355,13 +375,117 @@
         </spacer>
        </item>
        <item>
-        <widget class="QPushButton" name="mainImageHSVButton">
+        <widget class="QPushButton" name="mainImageYIQButton">
          <property name="text">
-          <string>HSV</string>
+          <string>YIQ</string>
          </property>
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="Line" name="line">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>310</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_2">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>400</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_3">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>402</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_4">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>495</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_5">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>497</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_6">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>590</y>
+        <width>256</width>
+        <height>3</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_7">
+      <property name="geometry">
+       <rect>
+        <x>320</x>
+        <y>310</y>
+        <width>3</width>
+        <height>280</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+     </widget>
+     <widget class="Line" name="line_8">
+      <property name="geometry">
+       <rect>
+        <x>576</x>
+        <y>310</y>
+        <width>3</width>
+        <height>280</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
      </widget>
     </widget>
    </widget>

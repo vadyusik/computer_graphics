@@ -21,6 +21,7 @@
 #include <QLabel>
 
 #include <MyImage.h>
+#include <histogramWindow.h>
 
 namespace Ui {
 class MainWindow;
@@ -33,7 +34,7 @@ class MainWindow : public QMainWindow
 private:
 
     MyImage imageObj;
-
+    histogramWindow histograms;
 
 public:
 
@@ -48,6 +49,18 @@ private slots:
     void on_colorCorrectionButton_clicked();
 
     void on_mainImageRGBButton_clicked();
+
+    void on_mainImageLABButton_clicked();
+
+    void on_mainImageHSVButton_clicked();
+
+
+
+    void on_mainImageYIQButton_clicked();
+
+
+
+    void on_histogramsButton_clicked();
 
 private:
     Ui::MainWindow *ui;
