@@ -40,19 +40,31 @@ public:
 
     void convert();
 
+    QVector<QVector3D> momentsYIQ();
+    QVector<QVector3D> momentsHSV();
+
     void convert_LAB_to_RGB(QPoint upPoint, //= QPoint(0, 0),
                             QPoint downPoint);// = QPoint(std::numeric_limits<int>::max(), std::numeric_limits<int>::max() ));
 
     void convert_LAB_to_RGB();
+    void convert_YIQ_to_RGB(QVector< QVector<QVector3D> > &arr);
+    void convert_HSV_to_RGB(QVector< QVector<QVector3D> > &arr);
 
     void histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                      int histImage_height, int histogram_height);
+
     void histogramLAB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                      int histImage_height, int histogram_height);
+
     void histogramHSV(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                      int histImage_height, int histogram_height);
+
     void histogramYIQ(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB);
+                      QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                      int histImage_height, int histogram_height);
 
 
 private:
@@ -61,6 +73,7 @@ private:
     void calculate_moments();
     void setLabel(QLabel *labelObj, QImage *img);
 
+public:
     QColor      inline LAB_to_RGB(float l, float a, float b);
     QVector3D   inline RGB_to_LAB(QRgb color);
 
@@ -93,9 +106,12 @@ public:
 
     void convert();
 
-    void colorCorrection(QLabel *labelObj);
+    void LABColorCorrection(QLabel *labelObj, bool L_channel, bool A_channel, bool B_channel);
+    void YIQColorCorrection(QLabel *labelObj, bool L_channel, bool A_channel, bool B_channel);
+    void HSVColorCorrection(QLabel *labelObj, bool L_channel, bool A_channel, bool B_channel);
 
     void load_image(QLabel *labelObj, bool is_main_image = false);
+    void save_image(QWidget *wptr);
 
 private:
 

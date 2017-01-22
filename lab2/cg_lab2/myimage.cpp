@@ -60,7 +60,7 @@ void MyImage::  convert()
     this->mainImage.convert();
 }
 
-void MyImage:: colorCorrection(QLabel *labelObj)
+void MyImage:: LABColorCorrection(QLabel *labelObj, bool L_channel, bool A_channel, bool B_channel)
 {
     if( isMainImageLoaded == false || isTargetImageLoaded == false)
     {
@@ -79,20 +79,40 @@ void MyImage:: colorCorrection(QLabel *labelObj)
     koef.setY( mainImage.standard_deviation.y() / targetImage.standard_deviation.y() );
     koef.setZ( mainImage.standard_deviation.z() / targetImage.standard_deviation.z() );
 
-    QVector< QVector< QVector3D > > *lab = &resultImage.image_lab;
+    //QVector< QVector< QVector3D > > *lab = &resultImage.image_lab;
 
     int h = resultImage.image.height(),
         w = resultImage.image.width();
 
-    for(int i = 0, j; i < w; i++)
+    if( L_channel == true )
     {
-        for(j = 0; j < h; j++)
+        qDebug() << "L = true";
+        for(int i = 0, j; i < w; i++)
         {
-            resultImage.image_lab[i][j].setX( mainImgEx.x() + koef.x()*( resultImage.image_lab[i][j].x() - targImgEx.x() ) );
-            resultImage.image_lab[i][j].setY( mainImgEx.y() + koef.y()*( resultImage.image_lab[i][j].y() - targImgEx.y() ) );
-            resultImage.image_lab[i][j].setZ( mainImgEx.z() + koef.z()*( resultImage.image_lab[i][j].z() - targImgEx.z() ) );
+            for(j = 0; j < h; j++)
+            {   resultImage.image_lab[i][j].setX( mainImgEx.x() + koef.x()*( resultImage.image_lab[i][j].x() - targImgEx.x() ) );}
         }
     }
+    else {qDebug() << "L = false";}
+    if( A_channel == true )
+    {
+        qDebug() << "A = true";
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   resultImage.image_lab[i][j].setY( mainImgEx.y() + koef.y()*( resultImage.image_lab[i][j].y() - targImgEx.y() ) );}
+        }
+    }else {qDebug() << "A = false";}
+    if( B_channel == true )
+    {
+        qDebug() << "B = true";
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   resultImage.image_lab[i][j].setZ( mainImgEx.z() + koef.z()*( resultImage.image_lab[i][j].z() - targImgEx.z() ) );}
+        }
+    }else {qDebug() << "B = false";}
+
 
     resultImage.convert_LAB_to_RGB();
 
@@ -101,6 +121,246 @@ void MyImage:: colorCorrection(QLabel *labelObj)
 
     isResultImageExist = true;
 }
+void MyImage:: YIQColorCorrection(QLabel *labelObj, bool Y_channel, bool I_channel, bool Q_channel)
+{
+    if( isMainImageLoaded == false || isTargetImageLoaded == false)
+    {
+        qDebug() << "NOT enough data to color correction!";
+        return;
+    }
+
+    QVector3D expectation(0, 0, 0);
+    QVector3D standard_deviation(0, 0, 0);
+
+    resultImage.image = targetImage.image;
+    QImage img = resultImage.image;
+
+    int h = img.height(),
+        w = img.width(),
+        N = img.height()*img.width();
+
+    QVector< QVector<QVector3D> > arrayYIQ ( w, QVector< QVector3D> ( h, QVector3D(0.0, 0.0, 0.0) ) );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        QRgb color_QRGB;
+
+        for(j = 0; j < h; j++)
+        {
+            color_QRGB = img.pixel(i, j);
+            arrayYIQ[i][j] = resultImage.RGB_to_YIQ( QVector3D( qRed(color_QRGB),
+                                                                qGreen(color_QRGB),
+                                                                qBlue(color_QRGB) ) );
+
+            expectation.setX( expectation.x() + arrayYIQ[i][j].x() );
+            expectation.setY( expectation.y() + arrayYIQ[i][j].y() );
+            expectation.setZ( expectation.z() + arrayYIQ[i][j].z() );
+        }
+    }
+
+    expectation.setX( expectation.x()/N );
+    expectation.setY( expectation.y()/N );
+    expectation.setZ( expectation.z()/N );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            standard_deviation.setX( ( arrayYIQ[i][j].x() - expectation.x() )*( arrayYIQ[i][j].x() - expectation.x() ) );
+            standard_deviation.setY( ( arrayYIQ[i][j].y() - expectation.y() )*( arrayYIQ[i][j].y() - expectation.y() ) );
+            standard_deviation.setZ( ( arrayYIQ[i][j].z() - expectation.z() )*( arrayYIQ[i][j].z() - expectation.z() ) );
+        }
+    }
+
+    standard_deviation.setX( sqrt( standard_deviation.x()/N ) );
+    standard_deviation.setY( sqrt( standard_deviation.y()/N ) );
+    standard_deviation.setZ( sqrt( standard_deviation.z()/N ) );
+
+    QVector<QVector3D> moments = mainImage.momentsYIQ();
+
+    QVector3D mainImgEx = moments[0],
+              koef = moments[1];
+
+
+    koef.setX( koef.x() / standard_deviation.x() );
+    koef.setY( koef.y() / standard_deviation.y() );
+    koef.setZ( koef.z() / standard_deviation.z() );
+
+    qDebug() << "M[Y] - " << mainImgEx.x() << "  " << expectation.x();
+    qDebug() << "M[I] - " << mainImgEx.y() << "  " << expectation.y();
+    qDebug() << "M[Q] - " << mainImgEx.z() << "  " << expectation.z();
+
+    qDebug() << "D[Y1]/D[Y2] - " << koef.x() ;
+    qDebug() << "D[I1]/D[Y2] - " << koef.y() ;
+    qDebug() << "D[Q1]/D[Y2] - " << koef.z() ;
+
+
+
+    if( Y_channel == true )
+    {   qDebug() << "Y channel will be changed";
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayYIQ[i][j].setX( mainImgEx.x() + koef.x()*( arrayYIQ[i][j].x() - expectation.x() ) );}
+        }
+    }
+    if( I_channel == true )
+    {   qDebug() << "I channel will be changed";
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayYIQ[i][j].setY( mainImgEx.y() + koef.y()*( arrayYIQ[i][j].y() - expectation.y() ) );}
+        }
+    }
+    if( Q_channel == true )
+    {   qDebug() << "Q channel will be changed";
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayYIQ[i][j].setZ( mainImgEx.z() + koef.z()*( arrayYIQ[i][j].z() - expectation.z() ) );}
+        }
+    }
+
+
+    resultImage.convert_YIQ_to_RGB( arrayYIQ );
+    resultImage.set_image( resultImage.image );
+
+    labelObj->resize(310, 310);
+    setImage(labelObj, &resultImage.image);
+
+    isResultImageExist = true;
+}
+
+void MyImage:: HSVColorCorrection(QLabel *labelObj, bool H_channel, bool S_channel, bool V_channel)
+{
+    if( isMainImageLoaded == false || isTargetImageLoaded == false)
+    {
+        qDebug() << "NOT enough data to color correction!";
+        return;
+    }
+
+    QVector3D expectation(0, 0, 0);
+    QVector3D standard_deviation(0, 0, 0);
+
+    resultImage.image = targetImage.image;
+    QImage img = resultImage.image;
+
+    int h = img.height(),
+        w = img.width(),
+        N = img.height()*img.width();
+
+    QVector< QVector<QVector3D> > arrayHSV ( w, QVector< QVector3D> ( h, QVector3D(0.0, 0.0, 0.0) ) );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        QRgb color_QRGB;
+
+        for(j = 0; j < h; j++)
+        {
+            color_QRGB = img.pixel(i, j);
+            arrayHSV[i][j] = resultImage.RGB_to_HSV( QVector3D( qRed(color_QRGB),
+                                                                qGreen(color_QRGB),
+                                                                qBlue(color_QRGB) ) );
+
+            expectation.setX( expectation.x() + arrayHSV[i][j].x() );
+            expectation.setY( expectation.y() + arrayHSV[i][j].y() );
+            expectation.setZ( expectation.z() + arrayHSV[i][j].z() );
+        }
+    }
+
+    expectation.setX( expectation.x()/N );
+    expectation.setY( expectation.y()/N );
+    expectation.setZ( expectation.z()/N );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            standard_deviation.setX( ( arrayHSV[i][j].x() - expectation.x() )*( arrayHSV[i][j].x() - expectation.x() ) );
+            standard_deviation.setY( ( arrayHSV[i][j].y() - expectation.y() )*( arrayHSV[i][j].y() - expectation.y() ) );
+            standard_deviation.setZ( ( arrayHSV[i][j].z() - expectation.z() )*( arrayHSV[i][j].z() - expectation.z() ) );
+        }
+    }
+
+    standard_deviation.setX( sqrt( standard_deviation.x()/N ) );
+    standard_deviation.setY( sqrt( standard_deviation.y()/N ) );
+    standard_deviation.setZ( sqrt( standard_deviation.z()/N ) );
+
+    QVector<QVector3D> moments = mainImage.momentsHSV();
+
+    QVector3D mainImgEx = moments[0],
+              koef = moments[1];
+
+
+    koef.setX( koef.x() / standard_deviation.x() );
+    koef.setY( koef.y() / standard_deviation.y() );
+    koef.setZ( koef.z() / standard_deviation.z() );
+
+    qDebug() << "M[H] - " << mainImgEx.x() << "  " << expectation.x();
+    qDebug() << "M[S] - " << mainImgEx.y() << "  " << expectation.y();
+    qDebug() << "M[V] - " << mainImgEx.z() << "  " << expectation.z();
+
+    qDebug() << "D[H1]/D[H2] - " << koef.x() ;
+    qDebug() << "D[S1]/D[S2] - " << koef.y() ;
+    qDebug() << "D[V1]/D[V2] - " << koef.z() ;
+
+
+
+    if( H_channel == true )
+    {
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayHSV[i][j].setX( mainImgEx.x() + koef.x()*( arrayHSV[i][j].x() - expectation.x() ) );}
+        }
+    }
+    if( S_channel == true )
+    {
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayHSV[i][j].setY( mainImgEx.y() + koef.y()*( arrayHSV[i][j].y() - expectation.y() ) );}
+        }
+    }
+    if( V_channel == true )
+    {
+        for(int i = 0, j; i < w; i++)
+        {
+            for(j = 0; j < h; j++)
+            {   arrayHSV[i][j].setZ( mainImgEx.z() + koef.z()*( arrayHSV[i][j].z() - expectation.z() ) );}
+        }
+    }
+
+
+    resultImage.convert_HSV_to_RGB( arrayHSV );
+    resultImage.set_image( resultImage.image );
+
+    labelObj->resize(310, 310);
+    setImage(labelObj, &resultImage.image);
+
+    isResultImageExist = true;
+}
+
+void MyImage:: save_image(QWidget *wptr)
+{
+    if( isResultImageExist == false )
+    {   return;}
+
+    QString dir = QFileDialog::getExistingDirectory(wptr, tr("Open Directory"),
+                                                    "/home/vadya/Dropbox/coding/ComputerGraphic/ImageExamples",
+                                                    QFileDialog::ShowDirsOnly); // | QFileDialog::DontResolveSymlinks);
+
+    if( dir == NULL )
+    {   return;}
+
+    dir += "/corrected image ";
+    QTime tm = QTime::currentTime();
+    dir += tm.toString(Qt::ISODate);
+    dir +=".jpg";
+
+    resultImage.image.save(dir);
+}
+
 
 
 //// IMAGE STRUCTURE
@@ -245,20 +505,6 @@ void ImageStructure::   convert_LAB_to_RGB(QPoint upPoint, QPoint downPoint)
             image.setPixel(i, j, color.rgba());
         }
     }
-
-
-    /* what it is ?
-    for(int i = w/2, j; i < w; i++)
-    {
-        for(j = h/2; j < h; j++)
-        {
-            QColor color(0, 0, 0);
-            image.setPixel(i, j, color.rgba());
-        }
-    }
-    //**/
-
-    qDebug() << "inner convertation done";
 }
 
 void ImageStructure::   convert_LAB_to_RGB()
@@ -277,11 +523,161 @@ void ImageStructure::   convert_LAB_to_RGB()
             image.setPixel(i, j, color.rgba());
         }
     }
+
     calculate_moments();
 }
 
+void ImageStructure::   convert_YIQ_to_RGB(QVector< QVector<QVector3D> > &arr)
+{
+    int h = image.height(),
+        w = image.width();
+
+    qDebug() << h << " " << w;
+
+    QVector3D clr;
+    QColor color;
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            clr = YIQ_to_RGB(arr[i][j]);
+            color = QColor( (int)clr.x(), (int)clr.y(), (int)clr.z() );
+
+            image.setPixel(i, j, color.rgba());
+        }
+    }
+}
+
+void ImageStructure::   convert_HSV_to_RGB(QVector< QVector<QVector3D> > &arr)
+{
+    int h = image.height(),
+        w = image.width();
+
+    QVector3D clr;
+    QColor color;
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            clr = HSV_to_RGB(arr[i][j]);
+            color = QColor( (int)clr.x(), (int)clr.y(), (int)clr.z() );
+
+            image.setPixel(i, j, color.rgba());
+        }
+    }
+}
+
+QVector<QVector3D> ImageStructure::   momentsYIQ()
+{
+    QVector3D expectation(0, 0, 0);
+    QVector3D standard_deviation(0, 0, 0);
+
+    int h = image.height(),
+        w = image.width(),
+        N = image.height()*image.width();
+
+    QVector< QVector<QVector3D> > arrayYIQ ( w, QVector< QVector3D> ( h, QVector3D(0.0, 0.0, 0.0) ) );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        QRgb color_QRGB;
+
+        for(j = 0; j < h; j++)
+        {
+            color_QRGB = image.pixel(i, j);
+            arrayYIQ[i][j] = RGB_to_YIQ( QVector3D( qRed(color_QRGB),
+                                                    qGreen(color_QRGB),
+                                                    qBlue(color_QRGB) ) );
+
+            expectation.setX( expectation.x() + arrayYIQ[i][j].x() );
+            expectation.setY( expectation.y() + arrayYIQ[i][j].y() );
+            expectation.setZ( expectation.z() + arrayYIQ[i][j].z() );
+        }
+    }
+
+    expectation.setX( expectation.x()/N );
+    expectation.setY( expectation.y()/N );
+    expectation.setZ( expectation.z()/N );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            standard_deviation.setX( ( arrayYIQ[i][j].x() - expectation.x() )*( arrayYIQ[i][j].x() - expectation.x() ) );
+            standard_deviation.setY( ( arrayYIQ[i][j].y() - expectation.y() )*( arrayYIQ[i][j].y() - expectation.y() ) );
+            standard_deviation.setZ( ( arrayYIQ[i][j].z() - expectation.z() )*( arrayYIQ[i][j].z() - expectation.z() ) );
+        }
+    }
+
+    standard_deviation.setX( sqrt( standard_deviation.x()/N ) );
+    standard_deviation.setY( sqrt( standard_deviation.y()/N ) );
+    standard_deviation.setZ( sqrt( standard_deviation.z()/N ) );
+
+    QVector<QVector3D> res;
+    res.push_back(expectation);
+    res.push_back(standard_deviation);
+
+    return res;
+}
+
+QVector<QVector3D> ImageStructure::   momentsHSV()
+{
+    QVector3D expectation(0, 0, 0);
+    QVector3D standard_deviation(0, 0, 0);
+
+    int h = image.height(),
+        w = image.width(),
+        N = image.height()*image.width();
+
+    QVector< QVector<QVector3D> > arrayHSV ( w, QVector< QVector3D> ( h, QVector3D(0.0, 0.0, 0.0) ) );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        QRgb color_QRGB;
+
+        for(j = 0; j < h; j++)
+        {
+            color_QRGB = image.pixel(i, j);
+            arrayHSV[i][j] = RGB_to_HSV( QVector3D( qRed(color_QRGB),
+                                                    qGreen(color_QRGB),
+                                                    qBlue(color_QRGB) ) );
+
+            expectation.setX( expectation.x() + arrayHSV[i][j].x() );
+            expectation.setY( expectation.y() + arrayHSV[i][j].y() );
+            expectation.setZ( expectation.z() + arrayHSV[i][j].z() );
+        }
+    }
+
+    expectation.setX( expectation.x()/N );
+    expectation.setY( expectation.y()/N );
+    expectation.setZ( expectation.z()/N );
+
+    for(int i = 0, j; i < w; i++)
+    {
+        for(j = 0; j < h; j++)
+        {
+            standard_deviation.setX( ( arrayHSV[i][j].x() - expectation.x() )*( arrayHSV[i][j].x() - expectation.x() ) );
+            standard_deviation.setY( ( arrayHSV[i][j].y() - expectation.y() )*( arrayHSV[i][j].y() - expectation.y() ) );
+            standard_deviation.setZ( ( arrayHSV[i][j].z() - expectation.z() )*( arrayHSV[i][j].z() - expectation.z() ) );
+        }
+    }
+
+    standard_deviation.setX( sqrt( standard_deviation.x()/N ) );
+    standard_deviation.setY( sqrt( standard_deviation.y()/N ) );
+    standard_deviation.setZ( sqrt( standard_deviation.z()/N ) );
+
+    QVector<QVector3D> res;
+    res.push_back(expectation);
+    res.push_back(standard_deviation);
+
+    return res;
+}
+
 void ImageStructure::   histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB)
+                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                                     int histImage_height, int histogram_height)
 {
     QImage R = image,
            G = image,
@@ -320,54 +716,59 @@ void ImageStructure::   histogramRGB(QLabel *labelR, QLabel *labelG, QLabel *lab
         }
     }
 
-    labelR->resize(290, 290);   setLabel(labelR, &R);
-    labelG->resize(290, 290);   setLabel(labelG, &G);
-    labelB->resize(290, 290);   setLabel(labelB, &B);
+    labelR->resize(histImage_height, histImage_height);   setLabel(labelR, &R);
+    labelG->resize(histImage_height, histImage_height);   setLabel(labelG, &G);
+    labelB->resize(histImage_height, histImage_height);   setLabel(labelB, &B);
 
     float mx = -1;
 
     for( int i = 1; i < 255; i++ )
     {   mx = std::max( std::max( RGBh[i].x(), mx ), std::max( RGBh[i].y(), RGBh[i].z() ) ); }
 
-    QImage RH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage GH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage BH = QImage(256, 90, QImage::Format_ARGB32);
+    //int histImage_height, int histogram_height
+
+    QImage RH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage GH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage BH = QImage(256, histogram_height, QImage::Format_ARGB32);
 
     int hr, hg, hb;
     for( int i = 0, j; i < 256; i++ )
     {
-        hr = std::min( (RGBh[i].x()*90.0)/mx, 90.0);
+        hr = std::min( (RGBh[i].x()*(float)histogram_height)/mx, (float)histogram_height);
         color = Qt::red;    QRgb clr = color.rgba();
         for( j = 0; j < hr; j++)
-        {   RH.setPixel(i, 89 - j, clr );}
+        {   RH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = hr; j < 90; j++)
-        {   RH.setPixel(i, 89 - j, clr );}
+        for( j = hr; j < histogram_height; j++)
+        {   RH.setPixel(i, histogram_height - 1 - j, clr );}
 
-        hg = std::min( (RGBh[i].y()*90.0)/mx, 90.0);
+        hg = std::min( (RGBh[i].y()*(float)histogram_height)/mx, (float)histogram_height );
         color = Qt::green;    clr = color.rgba();
         for( j = 0; j < hg; j++)
-        {   GH.setPixel(i, 89 - j, clr );}
+        {   GH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = hg; j < 90; j++)
-        {   GH.setPixel(i, 89 - j, clr );}
+        for( j = hg; j < histogram_height; j++)
+        {   GH.setPixel(i, histogram_height - 1 - j, clr );}
 
-        hb = std::min( (RGBh[i].z()*90.0)/mx, 90.0);
+        hb = std::min( (RGBh[i].z()*(float)histogram_height)/mx, (float)histogram_height);
         color = Qt::blue;    clr = color.rgba();
         for( j = 0; j < hb; j++)
-        {   BH.setPixel(i, 89 - j, clr );}
+        {   BH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = hb; j < 90; j++)
-        {   BH.setPixel(i, 89 - j, clr );}
+        for( j = hb; j < histogram_height; j++)
+        {   BH.setPixel(i, histogram_height - 1 - j, clr );}
     }
 
     labelHistR->setPixmap( QPixmap :: fromImage(RH) );
     labelHistG->setPixmap( QPixmap :: fromImage(GH) );
     labelHistB->setPixmap( QPixmap :: fromImage(BH) );
+
+    qDebug() << "RGB histogram created";
 }
 
 void ImageStructure::   histogramLAB(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB)
+                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                                     int histImage_height, int histogram_height)
 {
     QImage L = image,
            A = image,
@@ -408,9 +809,9 @@ void ImageStructure::   histogramLAB(QLabel *labelR, QLabel *labelG, QLabel *lab
         }
     }
 
-    labelR->resize(290, 290);   setLabel(labelR, &L);
-    labelG->resize(290, 290);   setLabel(labelG, &A);
-    labelB->resize(290, 290);   setLabel(labelB, &B);
+    labelR->resize(histImage_height, histImage_height);   setLabel(labelR, &L);
+    labelG->resize(histImage_height, histImage_height);   setLabel(labelG, &A);
+    labelB->resize(histImage_height, histImage_height);   setLabel(labelB, &B);
 
     float mx = -1;
 
@@ -420,45 +821,48 @@ void ImageStructure::   histogramLAB(QLabel *labelR, QLabel *labelG, QLabel *lab
         //qDebug() << i << " : " <<  LABhs[i].x() << " ; " << LABhs[i].y() << " ; " << LABhs[i].z();
     }
 
-    QImage LH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage AH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage BH = QImage(256, 90, QImage::Format_ARGB32);
+    QImage LH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage AH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage BH = QImage(256, histogram_height, QImage::Format_ARGB32);
 
     int hl, ha, hb;
     for( int i = 0, j; i < 256; i++ )
     {
-        hl = std::min( (LABhs[i].x()*90.0)/mx, 90.0);
+        hl = std::min( (LABhs[i].x()*(float)histogram_height)/mx, (float)histogram_height);
         color = Qt::black;    QRgb clr = color.rgba();
         for( j = 0; j < hl; j++)
-        {   LH.setPixel(i, 89 - j, clr );}
+        {   LH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = hl; j < 90; j++)
-        {   LH.setPixel(i, 89 - j, clr );}
+        for( j = hl; j < histogram_height; j++)
+        {   LH.setPixel(i, histogram_height - 1 - j, clr );}
 
-        ha = std::min( (LABhs[i].y()*90.0)/mx, 90.0);
+        ha = std::min( (LABhs[i].y()*(float)histogram_height)/mx, (float)histogram_height);
         color = Qt::yellow;    clr = color.rgba();
         for( j = 0; j < ha; j++)
-        {   AH.setPixel(i, 89 - j, clr );}
+        {   AH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = ha; j < 90; j++)
-        {   AH.setPixel(i, 89 - j, clr );}
+        for( j = ha; j < histogram_height; j++)
+        {   AH.setPixel(i, histogram_height - 1 - j, clr );}
 
-        hb = std::min( (LABhs[i].z()*90.0)/mx, 90.0);
+        hb = std::min( (LABhs[i].z()*(float)histogram_height)/mx, (float)histogram_height);
         color = Qt::blue;    clr = color.rgba();
         for( j = 0; j < hb; j++)
-        {   BH.setPixel(i, 89 - j, clr );}
+        {   BH.setPixel(i, histogram_height - 1 - j, clr );}
         color = Qt::white;  clr = color.rgba();
-        for( j = hb; j < 90; j++)
-        {   BH.setPixel(i, 89 - j, clr );}
+        for( j = hb; j < histogram_height; j++)
+        {   BH.setPixel(i, histogram_height - 1 - j, clr );}
     }
 
     labelHistR->setPixmap( QPixmap :: fromImage(LH) );
     labelHistG->setPixmap( QPixmap :: fromImage(AH) );
     labelHistB->setPixmap( QPixmap :: fromImage(BH) );
+
+    qDebug() << "LAB histogram created";
 }
 
 void ImageStructure::   histogramHSV(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB)
+                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                                     int histImage_height, int histogram_height)
 {
     QImage H = image,
            S = image,
@@ -554,7 +958,8 @@ void ImageStructure::   histogramHSV(QLabel *labelR, QLabel *labelG, QLabel *lab
 }
 
 void ImageStructure::   histogramYIQ(QLabel *labelR, QLabel *labelG, QLabel *labelB,
-                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB)
+                                     QLabel *labelHistR, QLabel *labelHistG, QLabel *labelHistB,
+                                     int histImage_height, int histogram_height)
 {
     QImage Y = image,
            I = image,
@@ -597,56 +1002,57 @@ void ImageStructure::   histogramYIQ(QLabel *labelR, QLabel *labelG, QLabel *lab
         }
     }
 
-    labelR->resize(290, 290);   setLabel(labelR, &Y);
-    labelG->resize(290, 290);   setLabel(labelG, &I);
-    labelB->resize(290, 290);   setLabel(labelB, &Q);
+    labelR->resize( histImage_height, histImage_height );   setLabel(labelR, &Y);
+    labelG->resize( histImage_height, histImage_height );   setLabel(labelG, &I);
+    labelB->resize( histImage_height, histImage_height );   setLabel(labelB, &Q);
 
 
     float mx = -1;
     for( int i = 1; i < 255; i++ )
     {
         mx = std::max( std::max( YIQhs[i].x(), mx ), std::max( YIQhs[i].y(), YIQhs[i].z() ) );
-        qDebug() << i << " : " <<  YIQhs[i].x() << " ; " << YIQhs[i].y() << " ; " << YIQhs[i].z();
+        //qDebug() << i << " : " <<  YIQhs[i].x() << " ; " << YIQhs[i].y() << " ; " << YIQhs[i].z();
     }
 
-    QImage YH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage IH = QImage(256, 90, QImage::Format_ARGB32);
-    QImage QH = QImage(256, 90, QImage::Format_ARGB32);
+    QImage YH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage IH = QImage(256, histogram_height, QImage::Format_ARGB32);
+    QImage QH = QImage(256, histogram_height, QImage::Format_ARGB32);
 
     QColor clrH;
 
     int hy, hi, hq;
     for( int k = 0, j; k < 256; k++ )
     {
-        hy = std::min( (YIQhs[k].x()*90.0)/mx, 90.0);
+        hy = std::min( (YIQhs[k].x()*(float)histogram_height)/mx, (float)histogram_height );
         clrH = Qt::black;    QRgb clr = clrH.rgba();
         for( j = 0; j < hy; j++)
-        {   YH.setPixel(k, 89 - j, clr );}
+        {   YH.setPixel(k, histogram_height - 1 - j, clr );}
         clrH = Qt::white;  clr = clrH.rgba();
-        for( j = hy; j < 90; j++)
-        {   YH.setPixel(k, 89 - j, clr );}
+        for( j = hy; j < histogram_height; j++)
+        {   YH.setPixel(k, histogram_height - 1 - j, clr );}
 
-        hi = std::min( (YIQhs[k].y()*90.0)/mx, 90.0);
+        hi = std::min( (YIQhs[k].y()*(float)histogram_height)/mx, (float)histogram_height );
         clrH = Qt::red;    clr = clrH.rgba();
         for( j = 0; j < hi; j++)
-        {   IH.setPixel(k, 89 - j, clr );}
+        {   IH.setPixel(k, histogram_height - 1 - j, clr );}
         clrH = Qt::white;  clr = clrH.rgba();
-        for( j = hi; j < 90; j++)
-        {   IH.setPixel(k, 89 - j, clr );}
+        for( j = hi; j < histogram_height; j++)
+        {   IH.setPixel(k, histogram_height - 1 - j, clr );}
 
-        hq = std::min( (YIQhs[k].z()*90.0)/mx, 90.0);
+        hq = std::min( (YIQhs[k].z()*(float)histogram_height)/mx, (float)histogram_height);
         clrH = Qt::green;    clr = clrH.rgba();
         for( j = 0; j < hq; j++)
-        {   QH.setPixel(k, 89 - j, clr );}
+        {   QH.setPixel(k, histogram_height - 1 - j, clr );}
         clrH = Qt::white;  clr = clrH.rgba();
-        for( j = hq; j < 90; j++)
-        {   QH.setPixel(k, 89 - j, clr );}
+        for( j = hq; j < histogram_height; j++)
+        {   QH.setPixel(k, histogram_height - 1 - j, clr );}
     }
 
     labelHistR->setPixmap( QPixmap :: fromImage(YH) );
     labelHistG->setPixmap( QPixmap :: fromImage(IH) );
     labelHistB->setPixmap( QPixmap :: fromImage(QH) );
-    //*/
+
+    qDebug() << "YIQ histogram created";
 }
 
 
