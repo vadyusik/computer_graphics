@@ -2,11 +2,5 @@ Dropbox/coding/computer_graphics
 git push -u origin master
 vadyusik
 
-QRgb color = image.pixel(i, j)
 
-double R, G, B, L, M, S, l, a, b;
-
-        R = qRed  (color);
-        G = qGreen(color);
-        B = qBlue (color);
 
